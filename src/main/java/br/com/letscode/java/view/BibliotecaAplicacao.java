@@ -2,25 +2,25 @@ package br.com.letscode.java.view;
 
 import br.com.letscode.java.dominio.Biblioteca;
 import br.com.letscode.java.dominio.Emprestimo;
+import br.com.letscode.java.dominio.Logger;
 import br.com.letscode.java.services.BibliotecaService;
-import br.com.letscode.java.services.LoggerService;
 
 import javax.inject.Inject;
 
 public class BibliotecaAplicacao {
 
-    private BibliotecaService bibliotecaService;
-    private LoggerService loggerService;
+    private final BibliotecaService bibliotecaService;
+    private final Logger logger;
 
 
     @Inject
-    public BibliotecaAplicacao(BibliotecaService bibliotecaService, LoggerService loggerService) {
+    public BibliotecaAplicacao(BibliotecaService bibliotecaService, Logger logger) {
         this.bibliotecaService = bibliotecaService;
-        this.loggerService = loggerService;
+        this.logger = logger;
     }
 
     public void realizarEmprestimo(Emprestimo emprestimo, Biblioteca biblioteca) {
-        System.out.println(this.loggerService.getLogger().getTempoFormatado());
+        System.out.println(this.logger.getTempoFormatado());
         this.bibliotecaService.realizarEmprestimo(emprestimo, biblioteca);
 
     }
