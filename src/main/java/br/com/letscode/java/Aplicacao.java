@@ -3,11 +3,11 @@ package br.com.letscode.java;
 import br.com.letscode.java.dominio.*;
 import br.com.letscode.java.excecoes.ExcedeuQuantidadeMaximaLivrosException;
 import br.com.letscode.java.excecoes.ProfessorEstourouLimiteLivrosException;
-import br.com.letscode.java.view.BibliotecaAplicacao;
 import org.jboss.weld.environment.se.Weld;
 import org.jboss.weld.environment.se.WeldContainer;
 
 import java.time.LocalDate;
+import java.util.Scanner;
 
 public class Aplicacao {
 
@@ -26,9 +26,46 @@ public class Aplicacao {
         //aplicacao.professorLivrosDemais();
 
         final WeldContainer container = new Weld().initialize();
-        final BibliotecaAplicacao bibliotecaAplicacao = container.select(BibliotecaAplicacao.class).get();
+        final PropriedadesInjetadas propriedadesInjetadas = container.select(PropriedadesInjetadas.class).get();
         //5 - Professor tentando pegar mais livros que o permitido com cdi
-        aplicacao.professorLivrosDemais(bibliotecaAplicacao);
+        Scanner sc = new Scanner(System.in);
+        int opcao = 0;
+        do {
+            System.out.println("Escolha a opção \n 1 - devolução \n 2 - Emprestimo \n 3 - Sair");
+
+            opcao = sc.nextInt();
+            PessoaEnum enumType;
+
+            switch (opcao) {
+                case 1:
+                    enumType = definirEnum(sc);
+                    aplicacao.realizarDevolucao(propriedadesInjetadas, enumType);
+                    break;
+                case 2:
+                    enumType = definirEnum(sc);
+                    aplicacao.professorLivrosDemais(propriedadesInjetadas, enumType);
+                    break;
+                case 3:
+                    System.exit(0);
+                default:
+                    System.out.println("1,2 ou 3");
+            }
+        } while (opcao < 3);
+    }
+
+    private static PessoaEnum definirEnum(Scanner sc) {
+        System.out.println("Selecione o Tipo de pessoa \n 1 - Professor \n 2 - Aluno");
+        int tipoPessoa = sc.nextInt();
+        switch (tipoPessoa) {
+            case 1:
+                return PessoaEnum.PROFESSOR;
+            case 2:
+                return PessoaEnum.ALUNO;
+            default:
+                return PessoaEnum.ALUNO;
+        }
+
+
     }
 
     /**
@@ -73,7 +110,7 @@ public class Aplicacao {
         }
     }
 
-    private void alunoSuspenso() {
+    private void realizarDevolucao() {
         Pessoa aluno = new Aluno("Jessé", "123", "jesse@letscode.com.br");
         Biblioteca biblioteca = new Biblioteca();
         try {
@@ -104,17 +141,27 @@ public class Aplicacao {
         }
     }
 
-    private void professorLivrosDemais(BibliotecaAplicacao bibliotecaAplicacao) {
-        Pessoa professor = new Professor("Jessé", "123", "jesse@letscode.com.br");
+    private void professorLivrosDemais(PropriedadesInjetadas propriedadesInjetadas, PessoaEnum pessoaEnum) {
+
         try {
-            var emprestimo = new Emprestimo(professor, new Livro[]{new Livro(), new Livro(), new Livro()});
-            Biblioteca biblioteca = new Biblioteca();
-            bibliotecaAplicacao.realizarEmprestimo(emprestimo, biblioteca);
+
+            propriedadesInjetadas.getBibliotecaView().realizarEmprestimo(pessoaEnum);
             //biblioteca.realizarEmprestimo(emprestimo);
-            bibliotecaAplicacao.realizarEmprestimo(emprestimo, biblioteca);
+
             //biblioteca.realizarEmprestimo(emprestimo);
         } catch (ExcedeuQuantidadeMaximaLivrosException | ProfessorEstourouLimiteLivrosException ex) {
             System.err.println(ex.getMessage());
         }
+    }
+
+    private void realizarDevolucao(PropriedadesInjetadas propriedadesInjetadas, PessoaEnum pessoaEnum) {
+
+        try {
+            propriedadesInjetadas.getBibliotecaRealizarDevolucaoView().realizarDevolucao(pessoaEnum);
+            ;
+        } catch (ExcedeuQuantidadeMaximaLivrosException ex) {
+            System.err.println(ex.getMessage());
+        }
+
     }
 }
